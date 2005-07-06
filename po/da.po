@@ -58,7 +58,7 @@ msgstr "Opsig abonnement på gruppe"
 
 #: og.module:41
 msgid "approve subscription request"
-msgstr "Godkend abbonementsansøgning"
+msgstr "Godkend abonnementsansøgning"
 
 #: og.module:42
 msgid "deny subscription request"
@@ -194,7 +194,7 @@ msgstr "Vil du modtage en e-mail hver gang en besked skrives her i denne gruppe?
 
 #: og.module:225;535;1237
 msgid "Submit"
-msgstr "Insend"
+msgstr "Indsend"
 
 #: og.module:236
 msgid "Subscription request approved."
