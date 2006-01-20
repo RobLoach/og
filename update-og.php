@@ -2,7 +2,7 @@
 // $Id$
 
 include_once "includes/bootstrap.inc";
-drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+include_once 'includes/common.inc';
 
 // backport of changes in HEAD that landed on 2005-10-19
 db_query("ALTER TABLE `og_uid` ADD `og_role` int(1) NOT NULL default '0'");
@@ -16,14 +16,15 @@ while ($object = db_fetch_object($result)) {
 }
 
 // this came from updates to 4.6 branch on 1.16.06
-$sql = "DELETE FROM {node_access} WHERE realm = 'og_uid'";
-db_query($sql);
-
 $sql = "SELECT nid FROM {node} WHERE type = 'og'";
 $result = db_query($sql);
 while ($row = db_fetch_object($result)) {
   $sql = "REPLACE INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'og_group', 1, 1, 1)";
   db_query($sql, $row->nid, $row->nid);
 }
+
+$sql = "DELETE FROM {node_access} WHERE realm = 'og_uid'";
+db_query($sql);
+
 
 ?>
