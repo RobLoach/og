@@ -286,6 +286,7 @@ function og_approve($gid, $uid) {
 
 function og_deny($gid, $uid) {
   if (node_access('update', array('nid' => $gid, 'status' => 1))) {
+    $node = node_load($gid);
     og_delete_subscription($gid, $uid);
     drupal_set_message(t('Subscription request denied.'));
     $subj = t('Subscription request denied for %title', array('title' => $node->title));
