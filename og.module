@@ -877,6 +877,11 @@ function og_validate(&$node) {
   if (module_exist('image')) {
     image_validate($node, 'image');
   }
+
+  if (isset($node->og_description) && empty($node->og_description)) {
+    form_set_error('description', t('Description can not be empty'));
+  }
+
 }
 
 function og_node_name($node) {
