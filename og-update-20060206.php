@@ -2,7 +2,7 @@
 // $Id$
 
 include_once "includes/bootstrap.inc";
-include_once "includes/common.inc";
+drupal_bootstrap(DRUPAL_BOOTSTRAP_DATABASE);
 
 $sql = "DELETE FROM {node_access} WHERE realm = 'og_uid'";
 db_query($sql);
