@@ -1,5 +1,7 @@
 // $Id$
 
+Reminder: please backup our node_access table before running this update.
+
 This script is safe to run from any 4.6 og prior feb 11.2006. if you ran an update script before, you might see errors on the ALTER TABLE statements. 
 Those can be safely skipped.
 
