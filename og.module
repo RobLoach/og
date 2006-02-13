@@ -1535,7 +1535,7 @@ function og_settings() {
   }
   unset($options['og']);
   $authoring .= form_select(t('Omitted content types'), 'og_omitted', variable_get('og_omitted', array()), $options, t('Select any node types which should <em>not</em> participate in the Audience targetting system.'), 0, TRUE);
-  $output = form_group(t('Node authoring form'), $authoring);
+  $output .= form_group(t('Node authoring form'), $authoring);
   
   $options = array('ron' => t('River of News'), 'gbct' => t('Group by content type'));
   $ghp .= form_radios(t('Presentation style'), 'og_home_page_presentation', variable_get('og_home_page_presentation', 'gbct'), $options, t('If neither of these presentations suits you, you may override in the theme layer.'));
