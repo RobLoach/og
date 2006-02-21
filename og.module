@@ -381,7 +381,6 @@ function og_invite($gid) {
         }
       }
       if (!$err) {
-        $node = node_load(array('nid' => $gid));
         $subj = t('Invitation to join the group "%group" at %site', array('%group' => $node->title, '%site' => variable_get('site_name', 'drupal')));
         $body = t("Hi. I'm a member of '%group' and I welcome you to join this group as well. Please see the link and message below.\n\n", array('%group' => $node->title));
         $body .= $node->title. "\n";
