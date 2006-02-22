@@ -1013,9 +1013,7 @@ function og_nodeapi_form($node) {
   global $user;
   
   $edit = $_REQUEST['edit'];
-  // 'og/albums/form' is a special case. We want the audience selection and 'public' checkbox even if 'image' node type is omitted
-  // Used for album module galleries
-  if ( substr_count($_GET['q'], 'og/albums/form') == 0 && ( $node->type == 'og' || ( in_array($node->type, variable_get('og_omitted', array()))))) {
+  if (( $node->type == 'og' || (in_array($node->type, variable_get('og_omitted', array()))))) {
     return form_hidden('og_public', 1);
   }
   else {
