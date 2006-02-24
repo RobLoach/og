@@ -366,7 +366,7 @@ function og_invite($gid) {
     if ($edit = $_POST['edit']) {
       $emails = explode(',', $edit['mails']);
       if (count($emails) > $max) {
-        form_set_error('mails', t("You may not specify more than %max email addresses.", array('%max' => $max)));
+        form_set_error('mails', t("You may not specify more than %max email addresses or usernames.", array('%max' => $max)));
         $err = TRUE;
       }
       else {
