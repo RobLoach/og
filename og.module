@@ -751,7 +751,7 @@ function theme_og_view(&$node, $teaser = FALSE, $page = FALSE) {
     if (!$output) {
       drupal_set_message(t('No posts in this group.'));
     }
-    $url = "og/feed/$node->nid";
+    $url = url("og/feed/$node->nid");
     $icon = theme('xml_icon', $url);
     if ($node->body) {
       $node->body = '<div id="mission">'. $node->body. '</div>';
