@@ -66,4 +66,6 @@ db_queryd($sql);
 
 // end feb 19
 
-?>
+// Add website field
+$sql = "ALTER TABLE {og} ADD website varchar(255) NOT NULL default ''";
+db_queryd($sql);
