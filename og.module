@@ -117,7 +117,9 @@ function og_theme() {
   }
   elseif (arg(0) == 'node' && arg(1) == 'add' && arg(2) == 'book' && arg(3) == 'parent') {
     $group_node = og_set_theme(arg(4));
-    $_REQUEST['edit']['og_groups'][] = $group_node->nid; // checks the right box on node form
+    if (is_array($_REQUEST['edit']['og_groups'])) {
+      $_REQUEST['edit']['og_groups'][] = $group_node->nid; // checks the right box on node form
+    }
   }
   elseif (arg(0) == 'node' && arg(1) == 'add' && $gid = $_REQUEST['edit']['og_groups'][0]) {
     $group_node = node_load(array('nid' => $gid));
