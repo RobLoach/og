@@ -1124,7 +1124,9 @@ function og_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       break;
     case 'insert':
       og_save_permissions($node);
-      og_mail($node);
+      if (!module_exist('og2list')) {
+        og_mail($node);
+      }
       break;
     case 'update':
       og_save_permissions($node);
