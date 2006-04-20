@@ -70,6 +70,10 @@ db_queryd($sql);
 $sql = "ALTER TABLE {og} ADD website varchar(255) NOT NULL default ''";
 db_queryd($sql);
 
-// april 5, 2006. we need to store integers in grant_view column for og_oublic realm
+// april 5, 2006. we need to store integers in grant_view column for og_public realm
 $sql = "ALTER TABLE {node_access} CHANGE grant_view grant_view int(11) unsigned NOT NULL default '0'";
+db_queryd($sql);
+
+// april 19, 2006: allow groups to specify a language
+$sql = "ALTER TABLE {og} ADD language varchar(12) NOT NULL default ''";
 db_queryd($sql);
