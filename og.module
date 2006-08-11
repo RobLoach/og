@@ -1199,7 +1199,9 @@ function og_nodeapi_form($node) {
     $required = variable_get('og_audience_required', 0);
     $subs = og_get_subscriptions($node->uid);
     foreach ($subs as $key => $val) {
-      $options[$key] = $val['title'];
+      if ($val['is_active']) {
+        $options[$key] = $val['title'];
+      }
     }
 
     // TODO: move this to prepare stage
