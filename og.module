@@ -529,6 +529,7 @@ function og_invite_form($gid) {
 }
 
 function og_invite_form_validate($form_id, $form_values, $form) {
+  global $user;
   $max = variable_get('og_email_max', 10);
 
   $mails = $form_values['mails'];
