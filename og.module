@@ -1728,7 +1728,9 @@ function og_user($op, $edit, &$account, $category = NULL) {
       $account->og_groups = og_get_subscriptions($account->uid);
       
       $result = db_query("SELECT og_email FROM {og_uid_global} WHERE uid = %d", $account->uid);
-      return db_fetch_array($result);
+      if (db_num_rows($result)) {
+        $account->og_email = db_result($result);
+      }
       break;
     case 'view':
       // only show to self and admins
