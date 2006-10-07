@@ -1307,9 +1307,8 @@ function og_nodeapi_rss_item(&$node) {
                    'attributes' => array('domain' => url('node/'. $gid, NULL, NULL, NULL, TRUE)));
   }
   // to get these modifications to work on 4.7, one needs to patch as per http://drupal.org/node/41703
-  $node->body .= '<div class="rss_groups">'. theme('links', $append). '</div>';
-  $node->teaser .= '<div class="rss_groups">'. theme('links', $append). '</div>';
-  return $ret;
+  $node->body .= '<div class="og_rss_groups">'. theme('links', $append). '</div>';
+  $node->teaser .= '<div class="og_rss_groups">'. theme('links', $append). '</div>';
 }
 
 function og_msgid_server() {
