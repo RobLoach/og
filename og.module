@@ -1717,9 +1717,8 @@ function og_user($op, $edit, &$account, $category = NULL) {
       if (count($options)) {
         $form['og_register'] = array('#type' => 'fieldset', '#title' => t('Groups'));
         $form['og_register']['og_register'] = array('#type' => 'checkboxes', '#options' => $options);
-        return $form;
-        }
-      break;
+      }
+      return $form;
     case 'form':
       if ($category == 'account') {
         $form['og_settings'] = array(
