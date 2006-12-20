@@ -625,9 +625,15 @@ function og_subscribe($gid, $uid = NULL) {
     $account = user_load(array('uid' => $uid));
   }
   $node = node_load($gid);
+  
+  // only admins can subscribe another person
   if ($account->uid != $user->uid && !node_access('update', $node)) {
-    // only admins can subscribe another person
     drupal_access_denied();
+  }
+  // user is already subscribed to this group, redirect to group homepage
+  else if (isset($account->og_groups[$node->nid])) {
+    drupal_set_message(t('%user is already subscribed to the group %group', array('%user' => theme('placeholder', $account->name), '%group' => theme('placeholder', $node->title))));
+    drupal_goto('node/'. $node->nid);
   }
   else {
     $form['gid'] = array('#type' => 'value', '#value' => $gid);
