@@ -1,4 +1,3 @@
-// $Id$
 
 Reminder: please backup our node_access table before running this update.
 
