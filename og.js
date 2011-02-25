@@ -1,4 +1,3 @@
-// $Id$
 
 Drupal.ogAttach = function() {
 /*  Disable the public checkbox if no groups are selected in in Audience*/
