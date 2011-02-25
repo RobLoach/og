@@ -1,4 +1,3 @@
-; $Id$
 name = Organic groups panels. NOT COMPATIBLE WITH DRUPAL 6 YET.
 description = "Enable group admins to create panel pages."
 package = "Organic groups"

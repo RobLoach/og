@@ -1,4 +1,3 @@
-; $ID$
 
 The og_actions module is a collection of actions for use with the trigger and organic groups modules. 
 

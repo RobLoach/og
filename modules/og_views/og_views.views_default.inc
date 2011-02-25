@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 // Declare all the .view files in the views subdir that end in .view
 function og_views_default_views() {
