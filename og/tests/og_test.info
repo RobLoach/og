@@ -1,4 +1,3 @@
-; $Id$
 name = "Organic groups tests"
 description = "Test module for the Organic groups tests."
 package = Testing
