@@ -1,4 +1,3 @@
-# $Id$
 #
 # LANGUAGE translation of Drupal (og_views.inc)
 # Copyright YEAR NAME <EMAIL@ADDRESS>

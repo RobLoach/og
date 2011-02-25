@@ -1,4 +1,3 @@
-# $Id$
 #
 # LANGUAGE translation of Drupal (og_panels.module)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
