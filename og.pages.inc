@@ -117,9 +117,11 @@ function og_manage_form_submit($form, &$form_state) {
 function og_create_admin_confirm($form_state, $node, $account) {
   $form['node'] = array('#type' => 'value', '#value' => $node);
   $form['account'] = array('#type' => 'value', '#value' => $account);
+  // Set the cancel destination, checking for an existing destination in the URL.
+  $destination = isset($_GET['destination']) ? urldecode($_GET['destination']) : "og/users/$node->nid";
   return confirm_form($form,
            t('Are you sure you want to make !name a group administrator for the group %title?', array('!name' => theme('username', $account), '%title' => $node->title)),
-           "og/users/$node->nid",
+           $destination,
            ' ',
            t('Confirm'),
            t('Cancel'));
@@ -157,9 +159,12 @@ function og_create_admin_confirm_submit($form, &$form_state) {
 function og_remove_admin_confirm($form_state, $node, $account) {
   $form['gid'] = array('#type' => 'value', '#value' => $node->nid);
   $form['account'] = array('#type' => 'value', '#value' => $account);
+
+  // Set the cancel destination, checking for an existing destination in the URL.
+  $destination = isset($_GET['destination']) ? urldecode($_GET['destination']) : "og/users/$node->nid";
   return confirm_form($form,
     t('Are you sure you want to remove !name as a group administrator for the group %title?', array('!name' => theme('username', $account), '%title' => $node->title)),
-    "og/users/$node->nid",
+    $destination,
     ' ',
     t('Remove'),
     t('Cancel')
@@ -327,9 +332,11 @@ function og_confirm_subscribe($form_state, $gid, $node, $account) {
    $submit_label = t('Join');
  }
 
+ // Set the cancel destination, checking for an existing destination in the URL.
+ $destination = isset($_GET['destination']) ? urldecode($_GET['destination']) : 'node/' . $node->nid;
  return confirm_form($form,
                 t('Are you sure you want to join the group %title?', array('%title' => $node->title)),
-                'node/'. $node->nid, ' ',
+                $destination, ' ',
                 $submit_label, t('Cancel'));
 }
 
@@ -360,7 +367,9 @@ function og_confirm_unsubscribe($form_state, $group_node, $account) {
     $message = t('Are you sure you want to remove !name from the group %title?', array('!name' => theme('username', $account), '%title' => $group_node->title));
     $confirm_text = t("Remove");
   }
-  return confirm_form($form, $message, 'og/users/'. $group_node->nid, ' ', $confirm_text, t('Cancel'));
+  // Set the cancel destination, checking for an existing destination in the URL.
+  $destination = isset($_GET['destination']) ? urldecode($_GET['destination']) : 'og/users/' . $group_node->nid;
+  return confirm_form($form, $message, $destination, ' ', $confirm_text, t('Cancel'));
 }
 
 /**
