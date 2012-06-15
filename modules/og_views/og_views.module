@@ -214,6 +214,9 @@ function og_views_view_group($node, $teaser, $page) {
     $view = views_get_view($name);
     if (!$view) {
       drupal_set_message(t('The View %name was not found. Check your variables table or settings.php.', array('%name' => $name)), 'error');
+      og_home_empty($node);
+      drupal_set_title(filter_xss_admin($node->title));
+      return;
     }
     else {
       if ($view->access('default')) {
