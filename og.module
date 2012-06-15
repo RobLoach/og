@@ -250,6 +250,9 @@ function og_hook_info() {
         'admin new' => array(
           'runs when' => t('A new user is added as an admin to a group'),
         ),
+        'admin remove' => array(
+          'runs when' => t("A user's admin access to a group is removed"),
+        ),
       ),
     ),
   );
@@ -278,6 +281,7 @@ function og_activity_info() {
       'user deny',
       'user request',
       'admin new',
+      'admin remove',
     )
   );
 
@@ -2261,6 +2265,10 @@ function _og_mail_text($messageid, $variables = array(), $language = NULL) {
         return t("You are now an administrator for the group '@group'", $variables, $langcode);
       case 'og_new_admin_body':
         return t("@username, you are now an administrator for the group '@group'.\n\nYou can administer this group by logging in here:\n !group_url", $variables, $langcode);
+      case 'og_remove_admin_subject':
+        return t("You are no longer an administrator for the group '@group'", $variables, $langcode);
+      case 'og_remove_admin_body':
+        return t("@username, your administrator access for the group '@group' has been removed.", $variables, $langcode);
     }
   }
 }

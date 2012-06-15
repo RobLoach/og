@@ -165,6 +165,7 @@ function og_notifications_og($op, $gid, $uid, $args) {
     case 'user deny':
     case 'admin create':
     case 'admin new':
+    case 'admin remove':
     case 'user broadcast':
       $destinations = is_array($uid) ? $uid : array($uid);
       foreach ($destinations as $uid) {

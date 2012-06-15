@@ -20,6 +20,7 @@
  *   What kind of action is being performed. Possible values (in
  *   alphabetical order):
  *   - admin new: A new user is added as an admin to a group.
+ *   - admin remove: A user's admin access to a group is removed.
  *   - user approve: A user has been approved for membership to a group.
  *   - user broadcast: Send notifications to group members.
  *   - user delete: A user deletes their subscription to a group.
@@ -40,7 +41,7 @@
  *     request.
  *   - is_admin: 1 to create a group administrator subscription, 0 to create a
  *     typical member subscription.
- *   admin new, user broadcast, user deny, user request:
+ *   admin new, admin remove, user broadcast, user deny, user request:
  *   - subject: Subject/Title of a notification message.
  *   - body: Text of a notification message.
  *   user broadcast:

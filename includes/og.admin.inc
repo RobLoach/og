@@ -184,6 +184,19 @@ function og_admin_settings() {
     '#description' => t('The body of the message sent to a new admin for a group. Available variables: @group, @username, !group_url, !invite_url'),
     '#default_value' => _og_mail_text('og_new_admin_body')
   );
+  $form['og_settings']['notifications']['og_remove_admin_subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Admin removal user notification subject'),
+    '#description' => t('The subject of the message sent to a user when their admin access is removed. Available variables: @group, @username, !group_url'),
+    '#default_value' => _og_mail_text('og_remove_admin_subject')
+  );
+  $form['og_settings']['notifications']['og_remove_admin_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Admin removal user notification body'),
+    '#rows' => 10,
+    '#description' => t('The body of the message sent to a user when their admin access is removed. Available variables: @group, @username, !group_url, !invite_url'),
+    '#default_value' => _og_mail_text('og_remove_admin_body')
+  );
 
   return system_settings_form($form);
 }

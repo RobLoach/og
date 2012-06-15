@@ -179,6 +179,11 @@ function og_remove_admin_confirm_submit($form, &$form_state) {
   $gid = $form_state['values']['gid'];
   og_save_subscription($gid, $account->uid, array('is_admin' => 0));
   drupal_set_message(t('%name is no longer a <em>group administrator</em>.', array('%name' => $account->name)));
+  $message = array(
+    'subject' => _og_mail_text('og_remove_admin_subject', $variables),
+    'body' => _og_mail_text('og_remove_admin_body', $variables)
+  );
+  module_invoke_all('og', 'admin remove', $gid, $account->uid, array());
   $form_state['redirect'] = "og/users/$gid";
 }
 
