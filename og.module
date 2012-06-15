@@ -1200,7 +1200,7 @@ function og_view_group(&$node, $teaser = FALSE, $page = FALSE) {
     $node->content['og_mission'] = array(
       '#value' => $node->body, // node_prepare() already ran check_markup()
       '#node' => $node,
-      '#weight' => -3,
+      '#weight' => module_exists('content') ? content_extra_field_weight($node->type, 'body_field') : -3,
       '#theme' => 'og_mission',
     );
   }
