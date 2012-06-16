@@ -89,7 +89,7 @@ function og_admin_settings() {
   // Messages fieldset.
   $form['og_settings']['notifications'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Messaging & Notifications'),
+    '#title' => t('Messaging and Notifications'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE
   );
