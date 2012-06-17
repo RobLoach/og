@@ -225,7 +225,7 @@ function og_views_view_group($node, $teaser, $page) {
     }
     // Views will set either total_rows or num_rows depending on whether
     // View has a pager, or might show an empty text.
-    if (!empty($view->total_rows) || !empty($view->num_rows) || !empty($view->page_empty) || $view->display_handler->get_option('empty')) {
+    if (!empty($view->total_rows) || !empty($view->num_rows) || !empty($view->result) || !empty($view->page_empty) || $view->display_handler->get_option('empty')) {
       $node->content['view'] = array(
         '#value' => $built,
         '#weight' => module_exists('content') ? content_extra_field_weight($node->type, 'view') : 25,
