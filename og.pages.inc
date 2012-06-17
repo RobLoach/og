@@ -288,7 +288,7 @@ function og_subscribe($node, $uid = NULL) {
       else {
         drupal_set_message(t('In order to join this group, you must <a href="!login">login</a> or <a href="!register">register</a> a new account. After you have successfully done so, you will need to request membership again.', array('!register' => url("user/register", array('query' => $dest)), '!login' => url("user/login", array('query' => $dest)))));
       }
-      drupal_goto('user');
+      drupal_goto('user', $dest);
     }
   }
   else {
