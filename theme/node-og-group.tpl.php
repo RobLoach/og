@@ -1,10 +1,10 @@
 <?php
 
 /**
- * @file node-og-grouo.tpl.php
- * 
- * Og has not modified this at all. It is same as node.tpl.php.
+ * @file
+ *
  * This template is used by default for group nodes.
+ * OG has not modified this at all. It is same as node.tpl.php.
  *
  * Theme implementation to display a node.
  *
