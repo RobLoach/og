@@ -693,9 +693,9 @@ function og_determine_context() {
     $node = $object;
   }
   // Check if we are in the node add page.
-  elseif (strpos($path, 'node/add') === 0 && !empty($_REQUEST['gids'])) {
+  elseif (strpos($path, 'node/add') === 0 && !empty($_REQUEST['gids']) && is_array($_REQUEST['gids'])) {
     // URL pattern: node/add/story?gids[]=1
-    $gid = intval(current($_REQUEST['gids']));
+    $gid = intval(reset($_REQUEST['gids']));
     $node = node_load($gid);
   }
   elseif ((!empty($item['map'][2]) && $item['map'][0] == 'og') || $path == 'comment/reply/%') {
