@@ -13,6 +13,9 @@ function og_views_views_handlers() {
       'og_views_handler_filter_og_group_nid' => array(
         'parent' => 'views_handler_filter_many_to_one',
       ),
+      'og_views_handler_filter_og_uid_nid' => array(
+        'parent' => 'views_handler_filter_many_to_one',
+      ),
       'og_views_handler_filter_og_type_all' => array(
         'parent' => 'views_handler_filter',
       ),
@@ -412,6 +415,10 @@ function og_views_data_og_uid() {
       'title' => t('Group node'),
       'handler' => 'og_views_handler_argument_og_uid_nid',
       'help' => t('<strong>Members</strong> are filtered for a specific group.'),
+    ),
+    'filter' => array(
+      'handler' => 'og_views_handler_filter_og_uid_nid',
+      'help' => t('OG: Members that belong to a group'),
     ),
   );
   $data['og_uid']['groups'] = array(
