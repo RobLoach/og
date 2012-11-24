@@ -2824,35 +2824,36 @@ function og_get_permissions($group_type = NULL, $group_bundle = NULL) {
   if (empty($group_type)) {
     return $perms;
   }
-  else {
-    // Get group-specific list of permissions.
-    $group_perms = array();
-    foreach ($perms as $perm => $perm_item) {
-      if (empty($perm_item['groups'])) {
-        // Empty 'groups' key means all groups are allowed.
-        $group_perms[$perm] = $perm_item;
-      }
-      elseif (!array_key_exists($group_type, $perm_item['groups'])) {
-        // If group_type doesn't exist in array, then it is not allowed.  This
-        // is NOT the same as an empty value.
-        continue;
-      }
-      elseif (empty($perm_item['groups'][$group_type]) || empty($group_bundle)) {
-        // All bundles within group type are allowed -- or user hasn't specified
-        // a group bundle
-        $group_perms[$perm] = $perm_item;
-      }
-      elseif (!empty($perm_item['groups'][$group_type][$group_bundle])) {
-        // Specific group_type/group_bundle combination allowed for permission.
-        $group_perms[$perm] = $perm_item;
-      }
+
+  // Get group-specific list of permissions.
+  $group_perms = array();
+  foreach ($perms as $perm => $perm_item) {
+    if (empty($perm_item['groups'])) {
+      // Empty 'groups' key means all groups are allowed.
+      $group_perms[$perm] = $perm_item;
     }
-    return $group_perms;
+    elseif (!array_key_exists($group_type, $perm_item['groups'])) {
+      // If group_type doesn't exist in array, then it is not allowed.  This
+      // is NOT the same as an empty value.
+      continue;
+    }
+    elseif (empty($perm_item['groups'][$group_type]) || empty($group_bundle)) {
+      // All bundles within group type are allowed -- or user hasn't specified
+      // a group bundle
+      $group_perms[$perm] = $perm_item;
+    }
+    elseif (!empty($perm_item['groups'][$group_type][$group_bundle])) {
+      // Specific group_type/group_bundle combination allowed for permission.
+      $group_perms[$perm] = $perm_item;
+    }
   }
+  return $group_perms;
 }
 
 /**
- * Get default permissions.  Can optionally be used to only get default
+ * Get default permissions.
+ *
+ * Can optionally be used to only get default
  * permissions available to a given group type and bundle.
  *
  * @param $group_type
