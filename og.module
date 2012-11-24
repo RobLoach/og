@@ -2761,10 +2761,10 @@ function og_role_revoke_permissions($rid, array $permissions = array()) {
  * used to only get permissions available to a given group type and bundle.
  *
  * @param $group_type
- *   Optional.  Limits returned permissions to only include those available
+ *   Optional. Limits returned permissions to only include those available
  *   to groups within the $group_type.
  * @param $group_bundle
- *   Optional.  Limits returned permissions to only include those available
+ *   Optional. Limits returned permissions to only include those available
  *   to groups within the $group_type and $group_bundle.
  * @return
  *   An array whose keys are permission names and whose corresponding values
@@ -2796,7 +2796,7 @@ function og_role_revoke_permissions($rid, array $permissions = array()) {
  *     Defaults to empty, which means the permission is available for all
  *     groups.
  */
-function og_get_permissions($group_type=NULL, $group_bundle=NULL) {
+function og_get_permissions($group_type = NULL, $group_bundle = NULL) {
   $perms = &drupal_static(__FUNCTION__, array());
 
   // Initialize list of all permissions
@@ -2820,7 +2820,7 @@ function og_get_permissions($group_type=NULL, $group_bundle=NULL) {
     // Allow other modules to alter the permissions.
     drupal_alter('og_permission', $perms);
   }
-  
+
   if (empty($group_type)) {
     return $perms;
   }
@@ -2856,10 +2856,10 @@ function og_get_permissions($group_type=NULL, $group_bundle=NULL) {
  * permissions available to a given group type and bundle.
  *
  * @param $group_type
- *   Optional.  Limits returned permissions to only include those available
+ *   Optional. Limits returned permissions to only include those available
  *   to groups within the $group_type.
  * @param $group_bundle
- *   Optional.  Limits returned permissions to only include those available
+ *   Optional. Limits returned permissions to only include those available
  *   to groups within the $group_type and $group_bundle.
  *
  * @return
@@ -2867,7 +2867,7 @@ function og_get_permissions($group_type=NULL, $group_bundle=NULL) {
  *   administrator roles; for each role id, the value is an array keyed
  *   with the permissions that should be enabled by default for that role.
  */
-function og_get_default_permissions($group_type=NULL, $group_bundle=NULL) {
+function og_get_default_permissions($group_type = NULL, $group_bundle = NULL) {
   $roles = og_get_default_roles();
   $default_perms = og_get_permissions($group_type, $group_bundle);
   $perms = array();
