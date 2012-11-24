@@ -182,11 +182,10 @@ function _og_features_get_permissions() {
     $assigned_perms[$row['group_type']][$row['group_bundle']][$row['permission']][] = $row['name'];
   }
 
-  $perms = og_get_permissions();
-
   $groups = og_get_all_group_bundle();
   foreach ($groups as $group_type => $bundles) {
     foreach ($bundles as $bundle => $name) {
+      $perms = og_get_permissions($group_type, $bundle);
       foreach ($perms as $perm => $info) {
         if (empty($assigned_perms[$group_type][$bundle][$perm])) {
           $return[$group_type][$bundle][$perm]['roles'] = array();

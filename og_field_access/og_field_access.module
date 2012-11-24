@@ -50,46 +50,136 @@ function og_field_access_field_access($op, $field, $entity_type, $entity, $accou
 /**
  * Implements hook_og_permission().
  *
- * Add view/ edit permissions to all existing fields.
+ * Define view/ edit permissions for all fields that are used by og groups and
+ * content types.
  */
 function og_field_access_og_permission() {
   $perms = array();
-  foreach (field_info_instances() as $entity => $bundles) {
-    foreach ($bundles as $bundle => $bundle_value) {
-      if (empty($bundle_value)) {
+  $field_uses = array();
+
+  // Fill in $perms array ordered by bundle name, field_label.
+  foreach (entity_get_info() as $entity_type => $entity_value) {
+    foreach ($entity_value['bundles'] as $bundle => $bundle_value) {
+      if (!og_is_group_type($entity_type, $bundle) && !og_is_group_content_type($entity_type, $bundle)) {
         continue;
       }
 
-      if (!og_is_group_type($entity, $bundle) && !og_is_group_content_type($entity, $bundle)) {
-        continue;
-      }
+      $allowed_groups = og_get_allowed_groups_by_bundle($entity_type, $bundle);
 
-      foreach ($bundle_value as $field_name => $value) {
-        $label = $value['label'];
-
-        $perm = 'view ' . $field_name . ' field';
-        $perms[$perm] = array(
-          'title' => t('View @label field', array('@label' => $label)),
-          'description' => t('View the %fieldname field for existing groups.', array('%fieldname' => $field_name)),
-          'roles' => array(OG_ANONYMOUS_ROLE, OG_AUTHENTICATED_ROLE),
-          'default role' => array(
-            OG_ANONYMOUS_ROLE,
-            OG_AUTHENTICATED_ROLE,
-            OG_ADMINISTRATOR_ROLE,
-          ),
-          'module' => 'og_field_access',
+      $instances = field_info_instances($entity_type, $bundle);
+      // Sort instances by label.
+      uasort($instances, '_og_field_access_sort_by_label');
+      foreach ($instances as $field_name => $instance) {
+        // Keep track of whether field is used by multiple og entities.
+        $field_uses[$field_name][] = array(
+          'label' => $instance['label'],
+          'entity' => $entity_value['label'],
+          'bundle' => $bundle_value['label'],
+          'groups' => $allowed_groups,
         );
 
-        $perm = 'update ' . $field_name . ' field';
-        $perms[$perm] = array(
-          'title' => t('Edit @label field', array('@label' => $label)),
-          'description' => t('Edit the %fieldname field for existing groups.', array('%fieldname' => $field_name)),
-          'roles' => array(OG_ANONYMOUS_ROLE, OG_AUTHENTICATED_ROLE),
-          'default role' => array(OG_ADMINISTRATOR_ROLE),
-          'module' => 'og_field_access',
-        );
+        // Create perms and add them to array if field is being processed for first time.
+        if (count($field_uses[$field_name])==1) {
+          $perm = "view $field_name field";
+          $perms[$perm] = array(
+            'title' => t('View %label field for @entity - @bundle', array('%label' => $instance['label'], '@entity' => $entity_value['label'], '@bundle' => $bundle_value['label'])),
+            'description' => t('View the %fieldname field for existing @entity - @bundle entities.', array('%fieldname' => $field_name, '@entity' => $entity_value['label'], '@bundle' => $bundle_value['label'])),
+            'roles' => array(OG_ANONYMOUS_ROLE, OG_AUTHENTICATED_ROLE),
+            'default role' => array(
+              OG_ANONYMOUS_ROLE,
+              OG_AUTHENTICATED_ROLE,
+              OG_ADMINISTRATOR_ROLE,
+            ),
+            'module' => 'og_field_access',
+            'groups' => $allowed_groups,
+          );
+
+          $perm = "update $field_name field";
+          $perms[$perm] = array(
+            'title' => t('Edit %label field for @entity - @bundle', array('%label' => $instance['label'], '@entity' => $entity_value['label'], '@bundle' => $bundle_value['label'])),
+            'description' => t('Edit the %fieldname field for existing @entity - @bundle entities.', array('%fieldname' => $field_name, '@entity' => $entity_value['label'], '@bundle' => $bundle_value['label'])),
+            'roles' => array(OG_ANONYMOUS_ROLE, OG_AUTHENTICATED_ROLE),
+            'default role' => array(OG_ADMINISTRATOR_ROLE),
+            'module' => 'og_field_access',
+            'groups' => $allowed_groups,
+          );
+        }
       }
     }
   }
+
+  // Go back through perms to modify handling of any fields that appear in
+  // multiple og entities.
+  // Sort $field_uses by $field_name instead of $bundle where field first
+  // appeared.
+  ksort($field_uses);
+  $multiple_use_perms = array();
+  foreach ($field_uses as $field_name => $uses) {
+    // No changes needed if field is only used once.
+    if (count($uses)==1) {
+      continue;
+    }
+
+    // Determine whether or not the field uses the same label in all instances.
+    $field_label = NULL;
+    $labels_same = TRUE;
+    foreach ($uses as $use) {
+      if (empty($field_label)) {
+        $field_label = $use['label'];
+      }
+      elseif ($field_label != $use['label']) {
+        // If instances use different labels, use $field_name as the generic label.
+        $field_label = $field_name;
+        $labels_same = FALSE;
+        break;
+      }
+    }
+    $entity_labels = array();
+    $allowed_groups = array();
+    foreach ($uses as $use) {
+      // Create list of entity labels -- only including field label if it is
+      // different for entities.
+      if ($labels_same) {
+        $entity_labels[] = t('@entity - @bundle', array('@entity' => $use['entity'], '@bundle' => $use['bundle']));
+      }
+      else {
+        $entity_labels[] = t('%field in @entity - @bundle', array('%field' => $use['label'], '@entity' => $use['entity'], '@bundle' => $use['bundle']));
+      }
+      // Merge all the allowed groups lists.
+      foreach ($use['groups'] as $group_type => $groups) {
+        if (!isset($allowed_groups[$group_type]) || empty($groups)) {
+          $allowed_groups[$group_type] = $groups;
+        }
+        elseif (!empty($allowed_groups[$group_type])) {
+          $allowed_groups[$group_type] += $groups;
+        }
+      }
+    }
+
+    // Remove permission from $perms list, and put in special list that later
+    // gets inserted at start of $perms list.
+    $perm = "view $field_name field";
+    $multiple_use_perms[$perm] = $perms[$perm];
+    unset($perms[$perm]);
+    // Update permission values to reflect multiple entities.
+    $multiple_use_perms[$perm]['title'] = t('View %label field for all og entities.', array('%label' => $field_label));
+    $multiple_use_perms[$perm]['description'] = t('View the %fieldname field for all relevant og entities.  Field uses:', array('%fieldname' => $field_name)) . ' ' . implode('; ', $entity_labels);
+    $multiple_use_perms[$perm]['groups'] = $allowed_groups;
+
+    $perm = "update $field_name field";
+    $multiple_use_perms[$perm] = $perms[$perm];
+    unset($perms[$perm]);
+    $multiple_use_perms[$perm]['title'] = t('Edit %label field for all og entities.', array('%label' => $field_label));
+    $multiple_use_perms[$perm]['description'] = t('Edit the %fieldname field for all relevant og entities.  Field uses:', array('%fieldname' => $field_name)) . ' ' . implode('; ', $entity_labels);
+    $multiple_use_perms[$perm]['groups'] = $allowed_groups;
+  }
+
+  $perms = array_merge($multiple_use_perms, $perms);
   return $perms;
+}
+
+function _og_field_access_sort_by_label($a, $b) {
+  $a_label = (is_array($a) && isset($a['label'])) ? $a['label'] : '';
+  $b_label = (is_array($b) && isset($b['label'])) ? $b['label'] : '';
+  return strnatcasecmp($a_label, $b_label);
 }

@@ -556,37 +556,49 @@ function og_ui_admin_permissions($form, $form_state, $group_type = '', $gid = 0,
   }
   asort($modules);
 
-  foreach ($modules as $module => $display_name) {
-    if ($permissions = module_invoke($module, 'og_permission')) {
-      $form['permission'][] = array(
-        '#markup' => $module_info[$module]['name'],
-        '#id' => $module,
-      );
-      foreach ($permissions as $perm => $perm_item) {
-        // Fill in default values for the permission.
-        $perm_item += array(
-          'description' => '',
-          'restrict access' => FALSE,
-          'warning' => !empty($perm_item['restrict access']) ? t('Warning: Give to trusted roles only; this permission has security implications in the group context.') : '',
-        );
-        // If the user can manage permissions, but does not have administer
-        // group permission, hide restricted permissions from them. This
-        // prevents users from escalating their privileges.
-        if ($gid && ($perm_item['restrict access'] && !og_user_access($group_type, $gid, 'administer group'))) {
-          continue;
-        }
+  // Get permission list from og_get_permissions to ensure that all
+  // implementations of hook_og_permission_alter are taken into account.
+  $permissions = og_get_permissions($group_type, $bundle);
 
-        $options[$perm] = '';
-        $form['permission'][$perm] = array(
-          '#type' => 'item',
-          '#markup' => $perm_item['title'],
-          '#description' => theme('user_permission_description', array('permission_item' => $perm_item)),
+  foreach ($modules as $module => $display_name) {
+    $markup_done = FALSE;
+    foreach ($permissions as $perm => $perm_item) {
+      if ($perm_item['module'] != $module) {
+        continue;
+      }
+      // Fill in default values for the permission.
+      $perm_item += array(
+        'description' => '',
+        'restrict access' => FALSE,
+        'warning' => !empty($perm_item['restrict access']) ? t('Warning: Give to trusted roles only; this permission has security implications in the group context.') : '',
+      );
+      // If the user can manage permissions, but does not have administer
+      // group permission, hide restricted permissions from them. This
+      // prevents users from escalating their privileges.
+      if ($gid && ($perm_item['restrict access'] && !og_user_access($group_type, $gid, 'administer group'))) {
+        continue;
+      }
+
+      if (!$markup_done) {
+        // Only add markup listing module name if the module's permissions are being
+        // shown on the page.
+        $markup_done = TRUE;
+        $form['permission'][] = array(
+          '#markup' => $module_info[$module]['name'],
+          '#id' => $module,
         );
-        foreach ($role_names as $rid => $name) {
-          // Builds arrays for checked boxes for each role
-          if (isset($role_permissions[$rid][$perm])) {
-            $status[$rid][] = $perm;
-          }
+      }
+
+      $options[$perm] = '';
+      $form['permission'][$perm] = array(
+        '#type' => 'item',
+        '#markup' => $perm_item['title'],
+        '#description' => theme('user_permission_description', array('permission_item' => $perm_item)),
+      );
+      foreach ($role_names as $rid => $name) {
+        // Builds arrays for checked boxes for each role
+        if (isset($role_permissions[$rid][$perm])) {
+          $status[$rid][] = $perm;
         }
       }
     }
@@ -643,7 +655,7 @@ function og_ui_admin_permissions_after_build($form) {
   unset($roles[$anon_rid]);
   $auth_rids = array_keys($roles);
 
-  foreach (og_get_permissions() as $key => $perm) {
+  foreach (og_get_permissions($group_type, $bundle) as $key => $perm) {
     $perm['roles'] = drupal_map_assoc($perm['roles']);
 
     if ($disable || (empty($perm['roles']) || empty($perm['roles'][OG_ANONYMOUS_ROLE]))) {
