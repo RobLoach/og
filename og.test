@@ -665,6 +665,13 @@ class OgPermissionsTestCase extends DrupalWebTestCase {
     $this->assertTrue(og_user_access('entity_test', $entity->pid, 'delete own article content', $user2), t('User still has "delete own article content" as they have "administer group" permission.'));
     $this->assertTrue(og_user_access('entity_test', $entity->pid, 'administer group', $user2), t('User has "administer group" permission.'));
   }
+
+  /**
+   * Test og_get_permissions().
+   */
+  function testOgGetPermissions() {
+
+  }
 }
 
 class OgDefaultAccessFieldTestCase extends DrupalWebTestCase {
