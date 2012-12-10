@@ -1591,6 +1591,19 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
  * Register memberships for deletion.
  */
 function og_membership_delete_by_group($group_type, $gid) {
+  if (variable_get('og_use_queue', FALSE) && module_exists('advancedqueue')) {
+    $queue = DrupalQueue::get('og_membership_delete_by_group');
+    // Add item to the queue.
+    $task = array(
+      'group_type' => $group_type,
+      'gid' => $gid,
+      'delete_orphan_group_content' => variable_get('og_delete_orphan_group_content', FALSE),
+    );
+
+    // Exit now, as the task will be processed via advanced-queue.
+    return $queue->createItem($task);
+  }
+
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'og_membership')
