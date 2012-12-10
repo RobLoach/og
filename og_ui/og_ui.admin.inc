@@ -73,6 +73,14 @@ function og_ui_admin_settings($form_state) {
     '#access' => module_exists('features'),
   );
 
+  $form['og_use_queue'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use queue'),
+    '#description' => t('Use "Advacned-Queue" module to process operations such as deleting memberships when groups are deleted.'),
+    '#default_value' => variable_get('og_use_queue', FALSE),
+    '#disabled' => !module_exists('advancedqueue'),
+  );
+
   return system_settings_form($form);
 }
 
