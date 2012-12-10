@@ -1538,6 +1538,9 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
   $queue = DrupalQueue::get('og_membership_delete_by_group');
   $data = $item->data;
 
+  $group_type = $data['group_type'];
+  $gid = $data['gid'];
+
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'og_membership')
@@ -1550,6 +1553,7 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
   if (empty($result['og_membership'])) {
     // We can delete the item.
     $queue->deleteItem($item);
+    return;
   }
 
   $ids = og_membership_delete_multiple(array_keys($result['og_membership']));
