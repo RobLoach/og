@@ -896,7 +896,7 @@ function og_entity_delete($entity, $entity_type) {
   list($id, , $bundle) = entity_extract_ids($entity_type, $entity);
   if (og_is_group($entity_type, $entity)) {
     og_delete_user_roles_by_group($entity_type, $entity);
-    og_membership_delete_by_group($entity_type, $id);
+    og_membership_delete_by_group($entity_type, $entity);
   }
   if (og_is_group_content_type($entity_type, $bundle)) {
     // As the field attachers are called after hook_entity_presave() we
@@ -1553,7 +1553,7 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
   if (empty($result['og_membership'])) {
     // We can delete the item.
     $queue->deleteItem($item);
-    return;
+    return TRUE;
   }
 
   $ids = og_membership_delete_multiple(array_keys($result['og_membership']));
@@ -1593,13 +1593,27 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
 
 /**
  * Register memberships for deletion.
+ *
+ * if the property "skip_og_membership_delete_by_group" exists on the
+ * entity, this function will return early, and allow other implementing
+ * modules to deal with the deletion logic.
+ *
+ * @param $entity_type
+ *   The group type.
+ * @param $entity
+ *   The group entity object.
  */
-function og_membership_delete_by_group($group_type, $gid) {
+function og_membership_delete_by_group($entity_type, $entity) {
+  if (!empty($entity->skip_og_membership_delete_by_group)) {
+    return;
+  }
+
+  list($gid) = entity_extract_ids($entity_type, $entity);
   if (variable_get('og_use_queue', FALSE) && module_exists('advancedqueue')) {
     $queue = DrupalQueue::get('og_membership_delete_by_group');
     // Add item to the queue.
     $task = array(
-      'group_type' => $group_type,
+      'group_type' => $entity_type,
       'gid' => $gid,
       'delete_orphan_group_content' => variable_get('og_delete_orphan_group_content', FALSE),
     );
@@ -1611,7 +1625,7 @@ function og_membership_delete_by_group($group_type, $gid) {
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'og_membership')
-    ->propertyCondition('group_type', $group_type, '=')
+    ->propertyCondition('group_type', $entity_type, '=')
     ->propertyCondition('gid', $gid, '=')
     ->execute();
 
