@@ -1615,7 +1615,9 @@ function og_membership_delete_by_group($entity_type, $entity) {
     $task = array(
       'group_type' => $entity_type,
       'gid' => $gid,
-      'delete_orphan_group_content' => variable_get('og_delete_orphan_group_content', FALSE),
+      // Allow implementing modules to determine the
+      // "og_delete_orphan_group_content" property value.
+      'delete_orphan_group_content' => isset($entity->og_delete_orphan_group_content) ? $entity->og_delete_orphan_group_content : variable_get('og_delete_orphan_group_content', FALSE),
     );
 
     // Exit now, as the task will be processed via advanced-queue.
