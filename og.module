@@ -1556,21 +1556,22 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
     return TRUE;
   }
 
-  $ids = og_membership_delete_multiple(array_keys($result['og_membership']));
+  $ids = array_keys($result['og_membership']);
 
   if (!empty($data['delete_orphan_group_content'])) {
     $og_memberships = og_membership_load_multiple($ids);
-    og_membership_delete_multiple($ids);
   }
+
+  og_membership_delete_multiple($ids);
 
   if (!empty($data['delete_orphan_group_content'])) {
     // Get all the group-content that is now orphan.
     $orphans = array();
-    $entity_type = $og_membership->entity_type;
-    $id = $og_membership->etid;
     foreach ($og_memberships as $og_membership) {
+      $entity_type = $og_membership->entity_type;
+      $id = $og_membership->etid;
       // Don't delete users.
-      if ($og_membership->entity_type == 'user') {
+      if ($entity_type == 'user') {
         continue;
       }
       if (og_get_entity_groups($entity_type, $id)) {
