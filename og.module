@@ -2203,9 +2203,11 @@ function og_get_entity_state($gid, $entity_type, $entity) {
  */
 function og_is_group_default_access($gid) {
   $return = TRUE;
-  if (($group = og_load($gid)) && $entity = $group->getEntity()) {
-    $property = OG_DEFAULT_ACCESS_FIELD;
 
+  $property = OG_DEFAULT_ACCESS_FIELD;
+  // For performance reasons, do not bother loading the group and entity unless
+  // the field exists.
+  if (field_info_field($property) && ($group = og_load($gid)) && $entity = $group->getEntity()) {
     if (!empty($entity->{$property}[LANGUAGE_NONE]) && $wrapper = $entity->{$property}[LANGUAGE_NONE]) {
       $return = empty($wrapper[0]['value']);
     }
