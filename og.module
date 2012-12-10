@@ -1518,7 +1518,77 @@ function og_membership_delete_multiple($ids = array()) {
 }
 
 /**
- * Delete all OG memberships by group.
+ * Implements hook_advanced_queue_info().
+ */
+function og_advanced_queue_info() {
+  $items['og_membership_delete_by_group'] = array(
+    'worker callback' => 'og_membership_delete_by_group_worker',
+    // Message-subscribe will deal itself with deleting claimed items.
+    'delete when completed' => FALSE,
+  );
+  return $items;
+}
+
+/**
+ * Advanced queue worker; Process a queue item.
+ *
+ * Delete memberships, and if needed all related group-content.
+ */
+function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
+  $queue = DrupalQueue::get('og_membership_delete_by_group');
+  $data = $item->data;
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'og_membership')
+    ->propertyCondition('group_type', $group_type, '=')
+    ->propertyCondition('gid', $gid, '=')
+    ->propertyOrderBy('id')
+    ->range(0, 10)
+    ->execute();
+
+  if (empty($result['og_membership'])) {
+    // We can delete the item.
+    $queue->deleteItem($item);
+  }
+
+  $ids = og_membership_delete_multiple(array_keys($result['og_membership']));
+
+  if (!empty($data['delete_orphan_group_content'])) {
+    $og_memberships = og_membership_load_multiple($ids);
+    og_membership_delete_multiple($ids);
+  }
+
+  if (!empty($data['delete_orphan_group_content'])) {
+    // Get all the group-content that is now orphan.
+    $orphans = array();
+    $entity_type = $og_membership->entity_type;
+    $id = $og_membership->etid;
+    foreach ($og_memberships as $og_membership) {
+      // Don't delete users.
+      if ($og_membership->entity_type == 'user') {
+        continue;
+      }
+      if (og_get_entity_groups($entity_type, $id)) {
+        continue;
+      }
+      $orphans[$entity_type][] = $id;
+    }
+
+    if ($orphans) {
+      foreach ($orphans as $entity_type => $ids) {
+        entity_delete_multiple($entity_type, $ids);
+      }
+    }
+  }
+
+  // Release the item.
+  $queue->releaseItem($item);
+  return TRUE;
+}
+
+/**
+ * Register memberships for deletion.
  */
 function og_membership_delete_by_group($group_type, $gid) {
   $query = new EntityFieldQuery();
