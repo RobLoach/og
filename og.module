@@ -1558,38 +1558,52 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
 
   $ids = array_keys($result['og_membership']);
 
-  if (!empty($data['delete_orphan_group_content'])) {
+  if ($data['orphans']['delete'] || $data['orphans']['move']) {
     $og_memberships = og_membership_load_multiple($ids);
   }
 
-  og_membership_delete_multiple($ids);
+  if ($data['orphans']['delete']) {
 
-  if (!empty($data['delete_orphan_group_content'])) {
-    // Get all the group-content that is now orphan.
-    $orphans = array();
-    foreach ($og_memberships as $og_membership) {
-      $entity_type = $og_membership->entity_type;
-      $id = $og_membership->etid;
-      // Don't delete users.
-      if ($entity_type == 'user') {
-        continue;
-      }
-      if (og_get_entity_groups($entity_type, $id)) {
-        continue;
-      }
-      $orphans[$entity_type][] = $id;
-    }
-
-    if ($orphans) {
-      foreach ($orphans as $entity_type => $ids) {
-        entity_delete_multiple($entity_type, $ids);
-      }
-    }
   }
 
   // Release the item.
   $queue->releaseItem($item);
   return TRUE;
+}
+
+/**
+ * Helper function to delete orphan group-content.
+ *
+ * @param $og_memberships
+ *   Array of OG membership.
+ *
+ * @see og_membership_delete_by_group_worker()
+ */
+function _og_orphans_delete($og_memberships) {
+  $ids = array_keys($og_memberships);
+  // Delete orphan group-content
+  og_membership_delete_multiple($ids);
+
+  // Get all the group-content that is now orphan.
+  $orphans = array();
+  foreach ($og_memberships as $og_membership) {
+    $entity_type = $og_membership->entity_type;
+    $id = $og_membership->etid;
+    // Don't delete users.
+    if ($entity_type == 'user') {
+      continue;
+    }
+    if (og_get_entity_groups($entity_type, $id)) {
+      continue;
+    }
+    $orphans[$entity_type][] = $id;
+  }
+
+  if ($orphans) {
+    foreach ($orphans as $entity_type => $ids) {
+      entity_delete_multiple($entity_type, $ids);
+    }
+  }
 }
 
 /**
@@ -1616,15 +1630,19 @@ function og_membership_delete_by_group($entity_type, $entity) {
     $task = array(
       'group_type' => $entity_type,
       'gid' => $gid,
-      // Allow implementing modules to determine the
-      // "og_delete_orphan_group_content" property value.
-      'delete_orphan_group_content' => isset($entity->og_delete_orphan_group_content) ? $entity->og_delete_orphan_group_content : variable_get('og_delete_orphan_group_content', FALSE),
+      // Allow implementing modules to determine the disposition (e.g. delete
+      // orphan group content).
+      'orphans' => array(
+        'delete' => isset($entity->og_orphans['delete']) ? $entity->og_orphans['delete'] : variable_get('og_orphans_delete', FALSE),
+        'move' => isset($entity->og_orphans['move']) ? $entity->og_orphans['move'] : array(),
+      ),
     );
 
     // Exit now, as the task will be processed via advanced-queue.
     return $queue->createItem($task);
   }
 
+  // No scalable solution was chosen, so just delete OG memberships.
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'og_membership')
