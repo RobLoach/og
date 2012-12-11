@@ -1616,8 +1616,8 @@ function _og_orphans_delete($ids) {
 function _og_orphans_move($ids, $group_type, $gid) {
   if (!og_is_group($group_type, $gid)) {
     $params = array(
-      'group_type' => $group_type,
-      'gid' => $gid,
+      '@group-type' => $group_type,
+      '@gid' => $gid,
     );
     throw new OgException(format_string('Cannot move orphan group-content to @group-type - @gid, as it is not a valid group.', $params));
   }
