@@ -1521,8 +1521,8 @@ function og_membership_delete_multiple($ids = array()) {
  * Implements hook_advanced_queue_info().
  */
 function og_advanced_queue_info() {
-  $items['og_membership_delete_by_group'] = array(
-    'worker callback' => 'og_membership_delete_by_group_worker',
+  $items['og_membership_orphans'] = array(
+    'worker callback' => 'og_membership_orphans_worker',
     // Message-subscribe will deal itself with deleting claimed items.
     'delete when completed' => FALSE,
   );
@@ -1534,8 +1534,8 @@ function og_advanced_queue_info() {
  *
  * Delete memberships, and if needed all related group-content.
  */
-function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
-  $queue = DrupalQueue::get('og_membership_delete_by_group');
+function og_membership_orphans_worker($item, $end_time = FALSE) {
+  $queue = DrupalQueue::get('og_membership_orphans');
   $data = $item->data;
 
   $group_type = $data['group_type'];
@@ -1558,7 +1558,7 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
 
   $ids = array_keys($result['og_membership']);
   if ($data['orphans']['delete']) {
-    _og_orphans_delete($og_memberships);
+    _og_orphans_delete($ids);
   }
   elseif ($data['orphans']['move']) {
     _og_orphans_move($ids, $data['orphans']['move']['group_type'], $data['orphans']['move']['gid']);
@@ -1578,12 +1578,10 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
  * @see og_membership_delete_by_group_worker()
  */
 function _og_orphans_delete($ids) {
-  $og_memberships = og_membership_load_multiple($ids);
-  // Delete orphan group-content
-  og_membership_delete_multiple($ids);
-
   // Get all the group-content that is now orphan.
   $orphans = array();
+  $og_memberships = og_membership_load_multiple($ids);
+
   foreach ($og_memberships as $og_membership) {
     $entity_type = $og_membership->entity_type;
     $id = $og_membership->etid;
@@ -1591,7 +1589,7 @@ function _og_orphans_delete($ids) {
     if ($entity_type == 'user') {
       continue;
     }
-    if (og_get_entity_groups($entity_type, $id)) {
+    if (count(og_get_entity_groups($entity_type, $id)) > 1) {
       continue;
     }
     $orphans[$entity_type][] = $id;
@@ -1602,6 +1600,9 @@ function _og_orphans_delete($ids) {
       entity_delete_multiple($entity_type, $ids);
     }
   }
+
+  // Delete the OG memberships.
+  og_membership_delete_multiple($ids);
 }
 
 /**
@@ -1622,10 +1623,6 @@ function _og_orphans_move($ids, $group_type, $gid) {
   }
 
   $og_memberships = og_membership_load_multiple($ids);
-
-  // Get all the group-content that will be an orphan if moved out of the
-  // group
-  $orphans = array();
   foreach ($og_memberships as $og_membership) {
     $entity_type = $og_membership->entity_type;
     $id = $og_membership->etid;
@@ -1655,9 +1652,10 @@ function og_membership_delete_by_group($entity_type, $entity) {
     return;
   }
 
+
   list($gid) = entity_extract_ids($entity_type, $entity);
   if (variable_get('og_use_queue', FALSE) && module_exists('advancedqueue')) {
-    $queue = DrupalQueue::get('og_membership_delete_by_group');
+    $queue = DrupalQueue::get('og_membership_orphans');
     // Add item to the queue.
     $task = array(
       'group_type' => $entity_type,
