@@ -1557,13 +1557,11 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
   }
 
   $ids = array_keys($result['og_membership']);
-
-  if ($data['orphans']['delete'] || $data['orphans']['move']) {
-    $og_memberships = og_membership_load_multiple($ids);
-  }
-
   if ($data['orphans']['delete']) {
-
+    _og_orphans_delete($og_memberships);
+  }
+  elseif ($data['orphans']['move']) {
+    _og_orphans_move($ids, $data['orphans']['move']['group_type'], $data['orphans']['move']['gid']);
   }
 
   // Release the item.
@@ -1574,13 +1572,13 @@ function og_membership_delete_by_group_worker($item, $end_time = FALSE) {
 /**
  * Helper function to delete orphan group-content.
  *
- * @param $og_memberships
- *   Array of OG membership.
+ * @param $ids
+ *   Array of OG membership IDs.
  *
  * @see og_membership_delete_by_group_worker()
  */
-function _og_orphans_delete($og_memberships) {
-  $ids = array_keys($og_memberships);
+function _og_orphans_delete($ids) {
+  $og_memberships = og_membership_load_multiple($ids);
   // Delete orphan group-content
   og_membership_delete_multiple($ids);
 
@@ -1603,6 +1601,40 @@ function _og_orphans_delete($og_memberships) {
     foreach ($orphans as $entity_type => $ids) {
       entity_delete_multiple($entity_type, $ids);
     }
+  }
+}
+
+/**
+ * Helper function to move orphan group-content to another group.
+ *
+ * @param $ids
+ *   Array of OG membership IDs.
+ *
+ * @see og_membership_delete_by_group_worker()
+ */
+function _og_orphans_move($ids, $group_type, $gid) {
+  if (!og_is_group($group_type, $gid)) {
+    $params = array(
+      'group_type' => $group_type,
+      'gid' => $gid,
+    );
+    throw new OgException(format_string('Cannot move orhpan group-content to @group-type - @gid, as it is not a valid group.', $params));
+  }
+
+  $og_memberships = og_membership_load_multiple($ids);
+
+  // Get all the group-content that will be an orphan if moved out of the
+  // group
+  $orphans = array();
+  foreach ($og_memberships as $og_membership) {
+    $entity_type = $og_membership->entity_type;
+    $id = $og_membership->etid;
+    if (count(og_get_entity_groups($entity_type, $id)) > 1) {
+      continue;
+    }
+    $og_membership->group_type = $group_type;
+    $og_membership->gid = $gid;
+    $og_membership->save();
   }
 }
 
