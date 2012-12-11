@@ -1559,13 +1559,15 @@ function og_membership_orphans_worker($item, $end_time = FALSE) {
   $ids = array_keys($result['og_membership']);
   if ($data['orphans']['delete']) {
     _og_orphans_delete($ids);
+    // Release the item.
+    $queue->releaseItem($item);
   }
   elseif ($data['orphans']['move']) {
     _og_orphans_move($ids, $data['orphans']['move']['group_type'], $data['orphans']['move']['gid']);
+    // Delete the item.
+    $queue->deleteItem($item);
   }
 
-  // Release the item.
-  $queue->releaseItem($item);
   return TRUE;
 }
 
