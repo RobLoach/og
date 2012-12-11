@@ -1618,7 +1618,7 @@ function _og_orphans_move($ids, $group_type, $gid) {
       'group_type' => $group_type,
       'gid' => $gid,
     );
-    throw new OgException(format_string('Cannot move orhpan group-content to @group-type - @gid, as it is not a valid group.', $params));
+    throw new OgException(format_string('Cannot move orphan group-content to @group-type - @gid, as it is not a valid group.', $params));
   }
 
   $og_memberships = og_membership_load_multiple($ids);
