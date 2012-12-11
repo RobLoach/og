@@ -1652,7 +1652,6 @@ function og_membership_delete_by_group($entity_type, $entity) {
     return;
   }
 
-
   list($gid) = entity_extract_ids($entity_type, $entity);
   if (variable_get('og_use_queue', FALSE) && module_exists('advancedqueue')) {
     $queue = DrupalQueue::get('og_membership_orphans');
