@@ -164,7 +164,7 @@ class OgBehaviorHandler extends EntityReference_BehaviorHandler_Abstract {
   }
 
   /**
-   * Overrides views_data_alter().
+   * Implements EntityReference_BehaviorHandler_Abstract::views_data_alter().
    */
   public function views_data_alter(&$data, $field) {
     // We need to override the default EntityReference table settings when OG
