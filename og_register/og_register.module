@@ -77,6 +77,63 @@ function og_register_query_og_alter(QueryAlterableInterface $query) {
 }
 
 /**
+ * Implements hook_field_attach_form().
+ *
+ * Mark the group-audience fields as ones that are used i registration. This is used
+ * to later on make sure the user is registered according to the allowed permissions (i.e. with or
+ * without administrator approval).
+ */
+function og_register_field_attach_form($entity_type, $entity, &$form, &$form_state, $langcode) {
+  global $user;
+  if ($user->uid || $entity_type != 'user') {
+    return;
+  }
+
+  if (!$fields = og_get_group_audience_fields()) {
+    return;
+  }
+
+  $found = FALSE;
+  foreach (array_keys($fields) as $field_name) {
+    if (empty($form[$field_name])) {
+      continue;
+    }
+    $found = TRUE;
+  }
+
+  if ($found) {
+    $form['#after_build'][] = 'og_register_after_build';
+  }
+}
+
+/**
+ * After build; Add our submit handler.
+ *
+ * We add the submit handler here, as it is late enough, so we know it will be triggered
+ * after the user was created.
+ */
+function og_register_after_build($form, &$form_state) {
+  $form['#submit'][] = 'og_register_register_submit';
+  return $form;
+}
+
+function og_register_register_submit($element, &$form_state) {
+  $langcode = $element['#language'];
+  $field_name = $element[$langcode]['#field_name'];
+
+  if (empty($values[$field_name][$langcode])) {
+    return;
+  }
+
+  $values = $values[$field_name][$langcode];
+  foreach ($values as &$value) {
+    // $value['state'] =
+  }
+
+  //form_set_value()
+}
+
+/**
  * Implements og_fields_info().
  */
 function og_register_og_fields_info() {
