@@ -112,11 +112,12 @@ class OgBehaviorHandler extends EntityReference_BehaviorHandler_Abstract {
     // Prepare an array with the membership state, if it was provided in the widget.
     $states = array();
     foreach ($items as $item) {
-      if (empty($item['state']) || !in_array($item['target_id'], $diff['insert'])) {
+      $gid = $item['target_id'];
+      if (empty($item['state']) || !in_array($gid, $diff['insert'])) {
         // State isn't provided, or not an "insert" operation.
         continue;
       }
-      $states[$item['gid']] = $item['state'];
+      $states[$gid] = $item['state'];
     }
 
     foreach ($diff['insert'] as $gid) {
