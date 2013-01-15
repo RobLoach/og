@@ -107,6 +107,9 @@ function og_register_field_attach_form($entity_type, $entity, &$form, &$form_sta
   }
 }
 
+/**
+ * Validate handler; Set the state according to the "subscribe" permissions of the group.
+ */
 function og_register_og_membership_state_validate($element, &$form_state) {
   $langcode = $element['#language'];
   $field_name = $element[$langcode]['#field_name'];
@@ -120,10 +123,10 @@ function og_register_og_membership_state_validate($element, &$form_state) {
 
   $values = $form_state['values'][$field_name][$langcode];
   foreach ($values as &$value) {
-    // Set the state according to the "subscribe" permissions of the group.
     $og_roles = og_roles($group_type, NULL, $value['target_id']);
     $rid = array_search(OG_ANONYMOUS_ROLE, $og_roles);
     $og_permissions = og_role_permissions(array($rid => $rid));
+    // State should be pending if "subscribe without approval" is not enabled.
     $value['state'] = !empty($og_permissions[$rid]['subscribe without approval']) ? OG_STATE_ACTIVE : OG_STATE_PENDING;
   }
 
