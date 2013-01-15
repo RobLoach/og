@@ -91,8 +91,7 @@ class OgBehaviorHandler extends EntityReference_BehaviorHandler_Abstract {
       // User has no access to field.
       return;
     }
-    $diff = $this->groupAudiencegetDiff($entity_type, $entity, $field, $instance, $langcode, $items);
-    if (!$diff) {
+    if (!$diff = $this->groupAudiencegetDiff($entity_type, $entity, $field, $instance, $langcode, $items)) {
       return;
     }
 
@@ -106,12 +105,30 @@ class OgBehaviorHandler extends EntityReference_BehaviorHandler_Abstract {
       og_membership_delete_multiple($diff['delete']);
     }
 
+    if (!$diff['insert']) {
+      return;
+    }
+
+    // Prepare an array with the membership state, if it was provided in the widget.
+    $states = array();
+    foreach ($items as $item) {
+      if (empty($item['state']) || !in_array($item['gid'], $diff['insert'])) {
+        // State isn't provided, or not an "insert" operation.
+        continue;
+      }
+      $states[$item['gid']] = $item['state'];
+    }
+
     foreach ($diff['insert'] as $gid) {
       $values = array(
         'entity_type' => $entity_type,
         'entity' => $entity,
         'field_name' => $field_name,
       );
+
+      if (!empty($states[$gid])) {
+        $values['state'] = $states[$gid];
+      }
 
       og_group($group_type, $gid, $values);
     }

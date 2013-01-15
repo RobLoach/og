@@ -127,7 +127,7 @@ function og_register_og_membership_state_validate($element, &$form_state) {
     $value['state'] = !empty($og_permissions[$rid]['subscribe without approval']) ? OG_STATE_ACTIVE : OG_STATE_PENDING;
   }
 
-  form_set_value($element, $values, $form_state);
+  form_set_value($element, array($langcode => $values), $form_state);
 }
 
 /**
