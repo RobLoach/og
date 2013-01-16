@@ -1592,9 +1592,12 @@ class OgBehaviorHandlerTestCase  extends DrupalWebTestCase {
 
     // Post a node, state should be active.
     $type = str_replace('_', '-', $this->group_content);
+    $edit = array(
+      'title' => $this->randomName(),
+    );
+
     $this->drupalLogin($user2);
 
-    $edit = array();
     $this->drupalGet('node/add/' . $type);
     $this->drupalPost('node/add/' . $type, $edit, t('Save'));
 
