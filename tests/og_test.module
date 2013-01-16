@@ -62,3 +62,27 @@ function og_test_entity_delete($entity, $type) {
     ),
   );
 }
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @see OgBehaviorHandlerTestCase::testSetStateOnInsert()
+ */
+function og_test_form_alter(&$form, $form_state) {
+  if (empty($form['#edit_node']) || $form['#bundle'] != 'behavior') {
+    return;
+  }
+
+  $form[OG_AUDIENCE_FIELD]['#element_validate'][] = 'og_test_form_behavior_validate';
+}
+
+/**
+ * Validate handler; Add state to the field values, if title is "state-pending".
+. */
+function og_test_form_behavior_validate($element, &$form_state) {
+  if ($form_state['values']['title'] != 'state-pending') {
+    return;
+  }
+
+  $form_state['values'][OG_AUDIENCE_FIELD][LANGUAGE_NONE][0]['state'] = OG_STATE_PENDING;
+}
