@@ -1587,6 +1587,9 @@ class OgBehaviorHandlerTestCase  extends DrupalWebTestCase {
     $wrapper->{OG_GROUP_FIELD}->set(1);
     $wrapper->save();
 
+    og_group('entity_test', $entity1, array('entity_type' => 'user', 'entity' => $user2));
+    og_group('entity_test', $entity1, array('entity_type' => 'user', 'entity' => $user3));
+
     // Post a node, state should be active.
     $type = str_replace('_', '-', $this->group_content);
     $this->drupalLogin($user2);
