@@ -1567,6 +1567,46 @@ class OgBehaviorHandlerTestCase  extends DrupalWebTestCase {
     $gids = og_get_entity_groups('node', $node);
     $this->assertEqual(array_values($gids['entity_test']), array($entity1->pid), 'Widget behavior was skipped and removed group association as expected.');
   }
+
+  /**
+   * Test settings the OG memnership state via field values, when associating
+   * a new group-content to a group.
+   */
+  function testSetStateOnInsert() {
+    $permissions = array(
+      'access content',
+      "create $this->group_content content",
+    );
+    $user1 = $this->drupalCreateUser();
+    $user2 = $this->drupalCreateUser($permissions);
+    $user3 = $this->drupalCreateUser($permissions);
+
+    // Create a group.
+    $entity1 = entity_create('entity_test', array('name' => 'main', 'uid' => $user1->uid));
+    $wrapper = entity_metadata_wrapper('entity_test', $entity1);
+    $wrapper->{OG_GROUP_FIELD}->set(1);
+    $wrapper->save();
+
+    // Post a node, state should be active.
+    $type = str_replace('_', '-', $this->group_content);
+    $this->drupalLogin($user2);
+
+    $edit = array();
+    $this->drupalGet('node/add/' . $type);
+    $this->drupalPost('node/add/' . $type, $edit, t('Save'));
+
+    $gids = og_get_entity_groups('user', $user2);
+
+
+    // Post a node, state should be pending.
+    $this->drupalLogin($user3);
+    $edit = array(
+      'title' => $this->randomName(),
+    );
+    $this->drupalPost('node/add/' . $type, $edit, t('Save'));
+    $gids = og_get_entity_groups('user', $user3, array(OG_STATE_PENDING));
+
+  }
 }
 
 /**
