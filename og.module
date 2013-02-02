@@ -139,6 +139,7 @@ function og_entity_info() {
     'metadata controller class' => 'OgMetadataController',
     'module' => 'og',
     'access callback' => 'og_group_entity_access',
+    'uri callback' => 'og_group_entity_uri',
   );
 
   $items['og_membership_type'] = array(
@@ -1341,6 +1342,16 @@ class OgGroup extends Entity {
 
     return FALSE;
   }
+
+  /**
+   * Return the URI of the entity the group is related to.
+   */
+  public function uri() {
+    if ($entity = $this->getEntity()) {
+      return entity_uri($this->entity_type, $this->getEntity());
+    }
+    return array();
+  }
 }
 
 /**
@@ -1351,6 +1362,13 @@ function og_group_entity_access($op, $group = NULL, $account = NULL) {
     return $group->access($op, $account);
   }
   return user_access('administer group');
+}
+
+/**
+ * Returns the URI of a group entity.
+ */
+function og_group_entity_uri($group) {
+  return $group->uri();
 }
 
 /**
