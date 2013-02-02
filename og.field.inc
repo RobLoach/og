@@ -464,8 +464,10 @@ function og_field_widget_form_validate($form, &$form_state) {
   $gids = !empty($form[OG_AUDIENCE_FIELD][LANGUAGE_NONE]['#hidden_selected_gids']) ? $form[OG_AUDIENCE_FIELD][LANGUAGE_NONE]['#hidden_selected_gids'] : array();
   if (!empty($form_state['values'][OG_AUDIENCE_FIELD][LANGUAGE_NONE])) {
     foreach ($form_state['values'][OG_AUDIENCE_FIELD][LANGUAGE_NONE] as $key => $value) {
-      // Add the selected group IDs.
-      $gids[$value['gid']] = $value['gid'];
+      // Add the selected group IDs if it is not the "add more" element.
+      if ($key !== 'add_more') {
+        $gids[$value['gid']] = $value['gid'];
+      }
     }
   }
 
