@@ -758,12 +758,14 @@ function og_ui_field_settings($form, &$form_state) {
   $options = array();
 
   $options = array();
-  foreach (entity_get_info() as $entity_type => $entity) {
-    if (!empty($entity['fieldable']) && $entity_type != 'group') {
-      foreach($entity['bundles'] as $bundle_name => $bundle) {
-        // Prefix the bundle name with the entity type.
-        $options[$entity_type][$entity_type . '__' .$bundle_name] = check_plain($bundle['label']);
-      }
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    if (empty($entity_info['fieldable'])) {
+      continue;
+    }
+    foreach($entity_info['bundles'] as $bundle_name => $bundle) {
+      // Prefix the bundle name with the entity type.
+      $entity_name = check_plain("$entity_info[label] ($entity_type)");
+      $options[$entity_name][$entity_type . '__' .$bundle_name] = check_plain($bundle['label']);
     }
   }
 
@@ -776,7 +778,8 @@ function og_ui_field_settings($form, &$form_state) {
   $options = array();
   foreach (og_fields_info() as $field_name => $field) {
     foreach ($field['type'] as $type) {
-      $options[$type][$field_name] = filter_xss($field['instance']['label']);
+      $type_name = $type == 'group' ? t('Group') : t('Group content');
+      $options[$type_name][$field_name] = filter_xss($field['instance']['label']);
     }
   }
 
