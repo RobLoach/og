@@ -783,7 +783,7 @@ function og_ui_field_settings($form, &$form_state) {
     }
   }
 
-  $selected_field_name = !empty($form_state['values']['fields_wrapper']['fields']) ? $form_state['values']['fields_wrapper']['fields'] : OG_AUDIENCE_FIELD;
+  $selected_field_name = !empty($form_state['values']['fields']) ? $form_state['values']['fields'] : OG_AUDIENCE_FIELD;
   $selected_og_info = og_fields_info($selected_field_name);
 
   $form['fields'] = array(
@@ -794,18 +794,19 @@ function og_ui_field_settings($form, &$form_state) {
     '#default_value' =>$selected_field_name,
     '#ajax' => array(
       'callback' => 'og_ui_admin_fields_ajax_callback',
-      'wrapper' => 'field_name',
+      'wrapper' => 'field-name-wrapper',
     ),
   );
 
-  $form['field_name'] = array(
-    '#prefix' => '<div id="field-name">',
+  $form['field_name_wrapper'] = array(
+    '#prefix' => '<div id="field-name-wrapper">',
     '#suffix' => '</div>',
-    '#parents' => array('field_name'),
+    '#tree' => TRUE,
+    '#parents' => array('field_name_wrapper'),
   );
 
   if (!empty($selected_og_info['multiple'])) {
-    $form['field_name'] += array(
+    $form['field_name_wrapper']['field_name'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
       '#size' => 32,
@@ -884,7 +885,7 @@ function og_ui_field_settings($form, &$form_state) {
  * instances, on the same bundle (e.g. OG_AUDIENCE_FIELD).
  */
 function og_ui_admin_fields_ajax_callback($form, &$form_state) {
-  return $form['field_name'];
+  return $form['field_name_wrapper'];
 }
 
 function og_ui_field_settings_validate($form, &$form_state) {
