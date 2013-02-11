@@ -809,7 +809,7 @@ function og_ui_field_settings($form, &$form_state) {
     $form['field_name_wrapper']['field_name'] = array(
       '#type' => 'textfield',
       '#required' => TRUE,
-      '#size' => 32,
+      '#maxlength' => 32,
       '#default_value' => $selected_field_name,
     );
   }
