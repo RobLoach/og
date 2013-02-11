@@ -947,19 +947,17 @@ function og_ui_field_settings_submit($form, &$form_state) {
   og_create_field($field_name, $entity_type, $bundle, $og_field);
 
   $params = array(
-    '@field-name' => $og_field['instance']['label'],
-    '@field-type' => $field_type,
+    '@field-type' => $og_field['instance']['label'],
+    '@field-name' => $field_name,
     '@bundle' => $bundle,
   );
 
   if ($field_name == $field_type) {
-    drupal_set_message(t('Added field @field-name to @bundle.', $params));
+    drupal_set_message(t('Added field @field-type to @bundle.', $params));
   }
   else {
-    drupal_set_message(t('Added field @field-name (@field-type) to @bundle.', $params));
+    drupal_set_message(t('Added field @field-type (@field-name) to @bundle.', $params));
   }
-
-
 }
 
 
