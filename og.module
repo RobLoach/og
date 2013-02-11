@@ -970,6 +970,7 @@ function og_og_fields_info() {
     ),
     'instance' => array(
       'label' => t('Group'),
+      'multiple' => TRUE,
       'description' => t('Determine if this is an OG group.'),
       'display_label' => 1,
       'widget' => array(

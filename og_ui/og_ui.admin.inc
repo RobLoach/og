@@ -783,14 +783,37 @@ function og_ui_field_settings($form, &$form_state) {
     }
   }
 
+  $selected_field_name = !empty($form_state['values']['fields_wrapper']['fields']) ? $form_state['values']['fields_wrapper']['fields'] : OG_AUDIENCE_FIELD;
+  $selected_og_info = og_fields_info($selected_field_name);
+
   $form['fields'] = array(
     '#title' => t('Fields'),
     '#type' => 'select',
     '#options' => $options,
+    '#required' => TRUE,
+    '#default_value' =>$selected_field_name,
+    '#ajax' => array(
+      'callback' => 'og_ui_admin_fields_ajax_callback',
+      'wrapper' => 'field_name',
+    ),
   );
 
-  $field_enabled = array();
+  $form['field_name'] = array(
+    '#prefix' => '<div id="field-name">',
+    '#suffix' => '</div>',
+    '#parents' => array('field_name'),
+  );
 
+  if (!empty($selected_og_info['multiple'])) {
+    $form['field_name'] += array(
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#size' => 32,
+      '#default_value' => $selected_field_name,
+    );
+  }
+
+  $field_enabled = array();
   $group_fields = og_fields_info();
 
   $group_fields_name = array_keys($group_fields);
@@ -854,6 +877,14 @@ function og_ui_field_settings($form, &$form_state) {
   );
 
   return $form;
+}
+
+/**
+ * AJAX callback to to return the field name if the field supports "mulitple"
+ * instances, on the same bundle (e.g. OG_AUDIENCE_FIELD).
+ */
+function og_ui_admin_fields_ajax_callback($form, &$form_state) {
+  return $form['field_name'];
 }
 
 function og_ui_field_settings_validate($form, &$form_state) {
