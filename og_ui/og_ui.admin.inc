@@ -765,11 +765,11 @@ function og_ui_field_settings($form, &$form_state) {
     foreach($entity_info['bundles'] as $bundle_name => $bundle) {
       // Prefix the bundle name with the entity type.
       $entity_name = check_plain("$entity_info[label] ($entity_type)");
-      $options[$entity_name][$entity_type . '__' .$bundle_name] = check_plain($bundle['label']);
+      $options[$entity_name][$entity_type . ':' . $bundle_name] = filter_xss($bundle['label']);
     }
   }
 
-  $form['bundles'] = array(
+  $form['bundle'] = array(
     '#title' => t('Bundles'),
     '#type' => 'select',
     '#options' => $options,
@@ -783,15 +783,15 @@ function og_ui_field_settings($form, &$form_state) {
     }
   }
 
-  $selected_field_name = !empty($form_state['values']['fields']) ? $form_state['values']['fields'] : OG_AUDIENCE_FIELD;
+  $selected_field_name = !empty($form_state['values']['field_type']) ? $form_state['values']['field_type'] : OG_AUDIENCE_FIELD;
   $selected_og_info = og_fields_info($selected_field_name);
 
-  $form['fields'] = array(
+  $form['field_type'] = array(
     '#title' => t('Fields'),
     '#type' => 'select',
     '#options' => $options,
     '#required' => TRUE,
-    '#default_value' =>$selected_field_name,
+    '#default_value' => $selected_field_name,
     '#ajax' => array(
       'callback' => 'og_ui_admin_fields_ajax_callback',
       'wrapper' => 'field-name-wrapper',
@@ -801,7 +801,6 @@ function og_ui_field_settings($form, &$form_state) {
   $form['field_name_wrapper'] = array(
     '#prefix' => '<div id="field-name-wrapper">',
     '#suffix' => '</div>',
-    '#tree' => TRUE,
     '#parents' => array('field_name_wrapper'),
   );
 
@@ -813,17 +812,24 @@ function og_ui_field_settings($form, &$form_state) {
       '#default_value' => $selected_field_name,
     );
   }
+  else {
+    // Pass the field name as a value.
+    $form['field_name_wrapper']['field_name'] = array(
+      '#type' => 'value',
+      '#value' => $selected_field_name,
+    );
+  }
 
   $field_enabled = array();
-  $group_fields = og_fields_info();
+  $og_fields = og_fields_info();
 
-  $group_fields_name = array_keys($group_fields);
+  $og_fields_name = array_keys($og_fields);
 
   $entity_info = entity_get_info();
 
   // Get the fields that exist in the bundle.
   foreach (field_info_fields() as $field_name => $field) {
-    if (in_array($field_name, $group_fields_name) && !empty($field['bundles'])) {
+    if (in_array($field_name, $og_fields_name) && !empty($field['bundles'])) {
       foreach ($field['bundles'] as $entity_type => $bundles) {
         foreach ($bundles as $bundle) {
           $field_enabled[$entity_type][$bundle][] = $field_name;
@@ -851,8 +857,8 @@ function og_ui_field_settings($form, &$form_state) {
         );
         foreach ($fields as $field_name) {
           $options[] = array(
-            check_plain($group_fields[$field_name]['instance']['label']),
-            filter_xss($group_fields[$field_name]['description']),
+            check_plain($og_fields[$field_name]['instance']['label']),
+            filter_xss($og_fields[$field_name]['description']),
             l(t('Delete'), "admin/config/group/fields/$entity_type/$bundle/$field_name/delete"),
           );
         }
@@ -888,34 +894,31 @@ function og_ui_admin_fields_ajax_callback($form, &$form_state) {
   return $form['field_name_wrapper'];
 }
 
+/**
+ * Validate handler; Check if field can be attached to bundle.
+ */
 function og_ui_field_settings_validate($form, &$form_state) {
-  $bundle = preg_replace('/^.*__/i', '', $form_state['values']['bundles']);
-  $entity_type = str_replace('__' . $bundle, '', $form_state['values']['bundles']);
+  list($entity_type, $bundle) = explode(':', $form_state['values']['bundle']);
+  $field_name = $form_state['values']['field_name'];
 
-  // Check if field can be attached to entity.
-  $group_field = og_fields_info($form_state['values']['fields']);
+  $og_field = og_fields_info($form_state['values']['field_type']);
   $bundles = field_info_bundles($entity_type);
   $entity_info = entity_get_info($entity_type);
 
   $params = array(
-    '%field' => $group_field['instance']['label'],
+    '%field' => $og_field['instance']['label'],
     '%bundle' => $bundles[$bundle]['label'],
     '%entity' => $entity_info['label'],
   );
 
-  if ($form_state['values']['fields'] == OG_GROUP_FIELD && $entity_type == 'group') {
-    form_set_error('bundles', t('It is not allowed to add the group field to the group entity.'));
-  }
-
-  // Check if field doesn't exist already.
-  if (($field = field_info_field($form_state['values']['fields'])) && !empty($field['bundles'][$entity_type]) && in_array($bundle, drupal_map_assoc($field['bundles'][$entity_type]))) {
+  if (field_info_instance($entity_type, $field_name, $bundle)) {
     form_set_error('bundles', t('Field %field already exists in %bundle.', $params));
   }
 
   // Check field can be attached to entity type.
-  if (!empty($group_field['entity']) && !in_array($entity_type, $group_field['entity'])) {
+  if (!empty($og_field['entity']) && !in_array($entity_type, $og_field['entity'])) {
     $items = array();
-    foreach ($group_field['entity'] as $entity_type) {
+    foreach ($og_field['entity'] as $entity_type) {
       $info = entity_get_info($entity_type);
       $items[] = $info['label'];
     }
@@ -924,22 +927,32 @@ function og_ui_field_settings_validate($form, &$form_state) {
 
 }
 
+/**
+ * Submit handler; Attach field can to bundle.
+ */
 function og_ui_field_settings_submit($form, &$form_state) {
-  $bundle = preg_replace('/^.*__/i', '', $form_state['values']['bundles']);
-  $entity_type = str_replace('__' . $bundle, '', $form_state['values']['bundles']);
-  $field_name = $form_state['values']['fields'];
+  list($entity_type, $bundle) = explode(':', $form_state['values']['bundle']);
+  $field_name = $form_state['values']['field_name'];
+  $field_type = $form_state['values']['field_type'];
 
-  og_create_field($field_name, $entity_type, $bundle);
+  $og_field = og_fields_info($field_type);
 
-  $group_field = og_fields_info($field_name);
-  $bundles = field_info_bundles($entity_type);
+  og_create_field($field_name, $entity_type, $bundle, $og_field);
 
   $params = array(
-    '%field' => $group_field['instance']['label'],
-    '%bundle' => $bundles[$bundle]['label'],
+    '@field-name' => $og_field['instance']['label'],
+    '@field-type' => $field_type,
+    '@bundle' => $bundle,
   );
 
-  drupal_set_message(t('Added field %field to %bundle.', $params));
+  if ($field_name == $field_type) {
+    drupal_set_message(t('Added field @field-name to @bundle.', $params));
+  }
+  else {
+    drupal_set_message(t('Added field @field-name (@field-type) to @bundle.', $params));
+  }
+
+
 }
 
 
