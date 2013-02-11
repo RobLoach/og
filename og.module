@@ -3054,6 +3054,7 @@ function og_fields_info($field_name = NULL) {
           $field += array(
             'entity type' => array(),
             'multiple' => FALSE,
+            'description' => '',
           );
 
           // Add the module information.

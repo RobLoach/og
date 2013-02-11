@@ -794,19 +794,26 @@ function og_ui_field_settings($form, &$form_state) {
     '#default_value' => $selected_field_name,
     '#ajax' => array(
       'callback' => 'og_ui_admin_fields_ajax_callback',
-      'wrapper' => 'field-name-wrapper',
+      'wrapper' => 'field-info-wrapper',
     ),
   );
 
-  $form['field_name_wrapper'] = array(
-    '#prefix' => '<div id="field-name-wrapper">',
+  $form['field_info_wrapper'] = array(
+    '#prefix' => '<div id="field-info-wrapper">',
     '#suffix' => '</div>',
-    '#parents' => array('field_name_wrapper'),
+    '#parents' => array('field_info_wrapper'),
+    '#type' => 'fieldset',
+  );
+
+  $form['field_info_wrapper']['description'] = array(
+    '#markup' => $selected_og_info['description'],
   );
 
   if (!empty($selected_og_info['multiple'])) {
-    $form['field_name_wrapper']['field_name'] = array(
+    $form['field_info_wrapper']['field_name'] = array(
       '#type' => 'textfield',
+      '#title' => t('Field name'),
+      '#description' => t('This field type supports adding multiple instances on the same bundle (i.e. the field name is not hardcoded).'),
       '#required' => TRUE,
       '#maxlength' => 32,
       '#default_value' => $selected_field_name,
@@ -891,7 +898,7 @@ function og_ui_field_settings($form, &$form_state) {
  * instances, on the same bundle (e.g. OG_AUDIENCE_FIELD).
  */
 function og_ui_admin_fields_ajax_callback($form, &$form_state) {
-  return $form['field_name_wrapper'];
+  return $form['field_info_wrapper'];
 }
 
 /**
