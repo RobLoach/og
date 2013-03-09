@@ -49,7 +49,7 @@ class OgMigrateMembership extends OgEntityMigration {
   }
 
   /**
-   * Regect the source row if the group or group content are missing.
+   * Reject the source row if the group or group content are missing.
    */
   public function prepareRow($row) {
     $entity_type = $row->entity_type;
