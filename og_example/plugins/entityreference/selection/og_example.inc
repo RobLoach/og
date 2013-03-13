@@ -1,7 +1,7 @@
 <?php
 
 $plugin = array(
-  'title' => t('Organic groups'),
-  'class' => 'OgSelectionHandler',
+  'title' => t('Organic groups example'),
+  'class' => 'OgExampleSelectionHandler',
 );
 

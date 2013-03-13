@@ -31,7 +31,7 @@ function og_field_widget_form(&$form, &$form_state, $field, $instance, $langcode
     return;
   }
 
-  if ($field['settings']['handler'] != 'og') {
+  if ($field['settings']['handler'] != 'og' && strpos($field['settings']['handler'], 'og_') !== 0) {
     $params = array('%label' => $instance['label']);
     form_error($form, t('Field %label is a group-audience but its Entity selection mode is not defined as "Organic groups" in the field settings page.', $params));
     return;
@@ -71,8 +71,7 @@ function og_field_widget_form(&$form, &$form_state, $field, $instance, $langcode
   }
 
   $target_type = $field['settings']['target_type'];
-  $user_gids = og_get_entity_groups();
-  $user_gids = !empty($user_gids[$target_type]) ? $user_gids[$target_type] : array();
+  $user_gids = _og_get_user_gids($target_type);
 
   // Get the "Other group" group IDs.
   $other_groups_ids = array_diff($entity_gids, $user_gids);
@@ -164,6 +163,29 @@ function og_field_widget_form(&$form, &$form_state, $field, $instance, $langcode
   $form['#after_build']['og'] = 'og_complex_widget_after_build';
 
   return $element;
+}
+
+function _og_get_user_gids($target_type) {
+  global $user;
+  $account = user_load($user->uid);
+  $ids = array();
+  foreach (array_keys(og_get_group_audience_fields()) as $field_name) {
+    $field = field_info_field($field_name);
+    if ($field['settings']['target_type'] != $target_type) {
+      continue;
+    }
+    $instance = field_info_instance('user', $field_name, 'user');
+    if (!$values = entityreference_get_selection_handler($field, $instance, 'user', $account)->getReferencableEntities()) {
+      continue;
+    }
+
+    // We need a flat array, with just the group IDs.
+    foreach ($values as $bundle => $bundle_ids) {
+      $ids = array_merge($ids, array_keys($bundle_ids));
+    }
+  }
+
+  return $ids;
 }
 
 /**
