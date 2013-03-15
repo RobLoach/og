@@ -106,6 +106,7 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
     $field_mode = $this->instance['field_mode'];
     $user_groups = og_get_groups_by_user(NULL, $group_type);
     $user_groups = array_merge($user_groups, $this->getGidsForCreate());
+
     // Show the user only the groups they belong to.
     if ($field_mode == 'default') {
       if ($user_groups && !empty($this->instance) && $this->instance['entity_type'] == 'node') {
@@ -175,6 +176,10 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
    * create, or empty array.
    */
   private function getGidsForCreate() {
+    if ($this->instance['entity_type'] != 'node') {
+      return array();
+    }
+    $node_type = $this->instance['bundle'];
     $group_type = $this->field['settings']['target_type'];
     $field_name = $this->field['field_name'];
 
@@ -188,7 +193,7 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
 
     // Iterate over IDs.
     foreach ($ids as $delta => $id) {
-      if (!is_numeric($id) || !$id || !og_user_access($group_type, $id, 'create ')) {
+      if (!is_numeric($id) || !$id || !og_user_access($group_type, $id, "create $node_type content")) {
         // User doesn't have access to create this group-content.
         unset($ids[$delta]);
       }
