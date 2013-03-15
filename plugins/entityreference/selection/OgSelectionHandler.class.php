@@ -105,7 +105,10 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
 
     $field_mode = $this->instance['field_mode'];
     $user_groups = og_get_groups_by_user(NULL, $group_type);
-    $user_groups = array_merge($user_groups, $this->getGidsForCreate());
+    if ($this->entity) {
+      $user_groups = array_merge($user_groups, $this->getGidsForCreate());
+    }
+
 
     // Show the user only the groups they belong to.
     if ($field_mode == 'default') {
@@ -179,26 +182,20 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
     if ($this->instance['entity_type'] != 'node') {
       return array();
     }
-    $node_type = $this->instance['bundle'];
-    $group_type = $this->field['settings']['target_type'];
-    $field_name = $this->field['field_name'];
 
-    $ids = !empty($_GET[$field_name]) ? explode(',', $_GET[$field_name]) : array();
-
-    if (module_exists('og_context') && $og_conext = og_conext()) {
-      if ($og_conext['group_type'] == $group_type) {
-        $ids[] = $og_conext['gid'];
-      }
+    if (!module_exists('entityreference_prepopulate') || empty($this->instance['settings']['behaviors']['prepopulate'])) {
+      return array();
     }
-
-    // Iterate over IDs.
+    // Don't try to validate the IDs.
+    if (!$ids = entityreference_prepopulate_get_values($this->field, $this->instance, TRUE, FALSE)) {
+      return array();
+    }
+    $node_type = $this->instance['bundle'];
     foreach ($ids as $delta => $id) {
-      if (!is_numeric($id) || !$id || !og_user_access($group_type, $id, "create $node_type content")) {
-        // User doesn't have access to create this group-content.
+      if (!is_numeric($id) || !$id || !og_user_access('node', $id, "create $node_type content")) {
         unset($ids[$delta]);
       }
     }
-
     return $ids;
   }
 }
