@@ -105,10 +105,7 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
 
     $field_mode = $this->instance['field_mode'];
     $user_groups = og_get_groups_by_user(NULL, $group_type);
-    if ($this->entity) {
-      $user_groups = array_merge($user_groups, $this->getGidsForCreate());
-    }
-
+    $user_groups = array_merge($user_groups, $this->getGidsForCreate());
 
     // Show the user only the groups they belong to.
     if ($field_mode == 'default') {
