@@ -175,20 +175,20 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
    * create, or empty array.
    */
   private function getGidsForCreate() {
-    $ids = array();
     $group_type = $this->field['settings']['target_type'];
-    if (module_exists('entityreference_prepopulate')) {
+    $field_name = $this->field['field_name'];
 
-    }
+    $ids = !empty($_GET[$field_name]) ? explode(',', $_GET[$field_name]) : array();
+
     if (module_exists('og_context') && $og_conext = og_conext()) {
       if ($og_conext['group_type'] == $group_type) {
-        $ids[] $og_conext['gid'];
+        $ids[] = $og_conext['gid'];
       }
     }
 
     // Iterate over IDs.
     foreach ($ids as $delta => $id) {
-      if (!og_user_access($group_type, $id, 'create ')) {
+      if (!is_numeric($id) || !$id || !og_user_access($group_type, $id, 'create ')) {
         // User doesn't have access to create this group-content.
         unset($ids[$delta]);
       }
