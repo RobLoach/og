@@ -18,10 +18,13 @@ class OgExampleSelectionHandler extends OgSelectionHandler {
   /**
    * Overrides OgSelectionHandler::buildEntityFieldQuery().
    *
-   * This is an example of "subgorups" (but without getting into the logic of subgrouping).
-   * The idea here is to show we can set "My groups" and "Other groups" to reference different groups by different
-   * logic. In this example, all group nodes below node ID 5, will appear under "My groups", and the rest will appear
-   * under "Other groups", for administrators.
+   * This is an example of "subgroups" (but without getting into the logic of
+   * sub-grouping).
+   * The idea here is to show we can set "My groups" and "Other groups" to
+   * reference different groups by different
+   * logic. In this example, all group nodes below node ID 5, will appear under
+   * "My groups", and the rest will appear under "Other groups",
+   * for administrators.
    */
   public function buildEntityFieldQuery($match = NULL, $match_operator = 'CONTAINS') {
     $group_type = $this->field['settings']['target_type'];
