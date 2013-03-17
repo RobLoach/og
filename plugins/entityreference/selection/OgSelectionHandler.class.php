@@ -190,11 +190,14 @@ class OgSelectionHandler extends EntityReference_SelectionHandler_Generic {
       return array();
     }
     $node_type = $this->instance['bundle'];
-    foreach ($ids as $delta => $id) {
+    
+    $return_ids = array();
+    foreach ($ids as $id) {
       if (!is_numeric($id) || !$id || !og_user_access('node', $id, "create $node_type content")) {
-        unset($ids[$delta]);
+        continue;
       }
+      $return_ids[] = $id;
     }
-    return $ids;
+    return $return_ids;
   }
 }
