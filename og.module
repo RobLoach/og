@@ -2871,14 +2871,13 @@ function og_role_delete($rid) {
  *   The group ID.
  */
 function og_delete_user_roles_by_group($group_type, $group) {
-  _og_maintain_overridden_roles($entity_type, $entity);
   // Check if group has overriden roles defined.
   list($gid, $vid,$bundle) = entity_extract_ids($group_type, $group);
   $global_roles = array_flip(og_roles($group_type, $bundle));
   if ($roles = og_roles($group_type, $bundle, $gid, TRUE)) {
     foreach ($roles as $rid => $name) {
 
-      if (variable_get('og_maintain_overridden_roles', FALSE)) {
+      if (variable_get('og_maintain_overridden_roles', TRUE)) {
         if (empty($global_roles[$name])) {
           // Role name doesn't exist in the global roles.
           continue;
