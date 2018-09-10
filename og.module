@@ -2605,6 +2605,9 @@ function og_is_member($group_type, $gid, $entity_type = 'user', $entity = NULL, 
  */
 function og_is_group_default_access($group_type, $gid) {
   $wrapper = entity_metadata_wrapper($group_type, $gid);
+  if (!is_callable(array($wrapper, 'getBundle'))) {
+    return false;
+  }
   $bundle = $wrapper->getBundle();
 
   if (!field_info_instance($group_type, OG_DEFAULT_ACCESS_FIELD, $bundle)) {
